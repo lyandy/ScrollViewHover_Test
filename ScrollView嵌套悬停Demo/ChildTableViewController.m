@@ -15,8 +15,6 @@ extern BOOL isNowBottom;
 @property (nonatomic, assign) BOOL canScroll;
 @end
 
-
-
 @implementation ChildTableViewController
 {
     CGFloat _lastOffsetY;
@@ -38,8 +36,6 @@ extern BOOL isNowBottom;
     // add notification
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(acceptMsg:) name:kHomeGoTopNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(acceptMsg:) name:kHomeLeaveTopNotification object:nil];//其中一个TAB离开顶部的时候，如果其他几个偏移量不为0的时候，要把他们都置为0
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(acceptMsg:) name:@"otherscrollviewshouldreset" object:nil];
 }
 
 #pragma mark - notification
@@ -54,29 +50,30 @@ extern BOOL isNowBottom;
             self.tableView.showsVerticalScrollIndicator = YES;
         } else {
             self.canScroll = NO;
-//            self.tableView.contentOffset = CGPointMake(0, 0);
         }
     }else if([notificationName isEqualToString:kHomeLeaveTopNotification]){
         _lastOffsetY = self.tableView.contentOffset.y;
         self.canScroll = NO;    // 如果没有滑动到了顶部TableView就不能滑动了
         self.tableView.showsVerticalScrollIndicator = NO;
-//        self.tableView.contentOffset = CGPointMake(0, 0);
-    } else if ([notificationName isEqualToString:@"otherscrollviewshouldreset"]) {
-        self.tableView.contentOffset = CGPointZero;
     }
 }
 
+- (void)setCanScroll:(BOOL)canScroll
+{
+    _canScroll = canScroll;
+}
+
+int _lastPosition; //A variable define in headfile
 #pragma mark - UIScrollViewDelegate
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView{
 
     if (self.canScroll == NO && (isNowBottom == NO || _lastOffsetY <= 0)) {
         if (_lastOffsetY <= 0) _lastOffsetY = 0;
         scrollView.contentOffset = CGPointMake(0, _lastOffsetY);
-//        [[NSNotificationCenter defaultCenter] postNotificationName:@"otherscrollviewshouldreset" object:nil userInfo:nil];
-    }
+    } 
     
     CGFloat offsetY = scrollView.contentOffset.y;
-    
+    _lastOffsetY = offsetY;
     NSLog(@"TableView的偏移量：%f", offsetY);
     if (offsetY < 0) {
         _lastOffsetY = 0;
@@ -85,11 +82,13 @@ extern BOOL isNowBottom;
     
     if(isNowBottom == YES && _lastOffsetY > 0) {
         [[NSNotificationCenter defaultCenter] postNotificationName:kHomeLeaveTopNotification object:nil userInfo:@{@"canScroll":@"0"}];
-    }
-    else if (isNowBottom == NO && isNowTop == NO && _lastOffsetY <= offsetY) {
+    } else if (_lastOffsetY == 0) {
         [[NSNotificationCenter defaultCenter] postNotificationName:kHomeLeaveTopNotification object:nil userInfo:@{@"canScroll":@"1"}];
     }
-    _lastOffsetY = offsetY;
+    
+//    if (_lastOffsetY == 0) {
+//        [[NSNotificationCenter defaultCenter] postNotificationName:kHomeLeaveTopNotification object:nil userInfo:@{@"canScroll":@"1"}];
+//    }
 }
 
 #pragma mark - Table view data source

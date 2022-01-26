@@ -83,6 +83,7 @@ BOOL isNowBottom = YES;
         _containerScrollView = [[ArtScrollView alloc] init];
         _containerScrollView.delegate = self;
         _containerScrollView.showsVerticalScrollIndicator = YES;
+        _containerScrollView.scrollsToTop = NO;
     }
     return _containerScrollView;
 }
@@ -146,14 +147,12 @@ BOOL isNowBottom = YES;
     } else {
         NSLog(@"离开顶端");
         [[NSNotificationCenter defaultCenter] postNotificationName:kHomeGoTopNotification object:nil userInfo:@{@"canScroll":@"0"}];
-        if (_canScroll == NO) {
+        if (isNowBottom == YES && _canScroll == NO) {
+            scrollView.contentOffset = CGPointMake(0, -(kStatusBarHeight + kNavigationBarHeight));
+        } else if (_canScroll == NO) {
             NSLog(@"_canScroll:===%d", _canScroll);
             scrollView.contentOffset = CGPointMake(0, maxOffsetY);
         }
-        
-//        if (isNowBottom == YES && _canScroll == NO) {
-//            scrollView.contentOffset = CGPointMake(0, -(kStatusBarHeight + kNavigationBarHeight));
-//        }
     }
     
     if (offsetY <= -(kStatusBarHeight + kNavigationBarHeight)) {

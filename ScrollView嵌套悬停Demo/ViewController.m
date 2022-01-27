@@ -82,6 +82,8 @@ BOOL isNowBottom = YES;
     if (!_containerScrollView) {
         _containerScrollView = [[ArtScrollView alloc] init];
         _containerScrollView.delegate = self;
+        _containerScrollView.bounces = NO;
+        _containerScrollView.scrollsToTop = NO;
         _containerScrollView.showsVerticalScrollIndicator = YES;
     }
     return _containerScrollView;
